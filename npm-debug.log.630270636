@@ -1,0 +1,22 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'ls' ]
+2 info using npm@3.10.8
+3 info using node@v7.0.0
+4 error extraneous: material-ui@0.16.6 /Users/boku/Desktop/Developer/plot_doujin_app/node_modules/material-ui
+4 error extraneous: react-tap-event-plugin@2.0.1 /Users/boku/Desktop/Developer/plot_doujin_app/node_modules/react-tap-event-plugin
+5 verbose exit [ 1, true ]
+6 verbose stack Error: write EPIPE
+6 verbose stack     at exports._errnoException (util.js:1026:11)
+6 verbose stack     at WriteWrap.afterWrite [as oncomplete] (net.js:804:14)
+7 verbose cwd /Users/boku/Desktop/Developer/plot_doujin_app
+8 error Darwin 16.1.0
+9 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "ls"
+10 error node v7.0.0
+11 error npm  v3.10.8
+12 error code EPIPE
+13 error errno EPIPE
+14 error syscall write
+15 error write EPIPE
+16 error If you need help, you may report this error at:
+16 error     <https://github.com/npm/npm/issues>
+17 verbose exit [ 1, true ]
