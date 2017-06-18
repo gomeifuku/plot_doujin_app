@@ -523,7 +523,7 @@ class MainSection extends Component {
   }
   changeMessage(key,messageId,changeValue){
     let messages=this.state.messages;
-    //とりあえず該当のメッセージ（１レコード）を表示させる。
+    //とりあえず該当のメッセージ（１レコード）をコンソールに表示させる。
     console.log(key,messageId);
 
 //  messages:{id,characterId,plot,imagePath}
