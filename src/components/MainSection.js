@@ -18,81 +18,13 @@ import FlatButton from 'material-ui/FlatButton';
 import Modal from 'react-modal';
 import avatar_img from '../../public/avatar.jpg';
 import avatar_img2 from '../../public/avatar2.png';
-
+import TestComponent from './TestComponent';
+const DEFAULT_AVATAR_INDEX = 0
 //連想配列に関して，いちいち属性増えた時直すの面倒だから型を決めて変数入力するだけのジェネレータを作っておく
-injectTapEventPlugin();
-//---------------------Component Test Field---------------------------------
-class TestFormChildren extends Component{
-
-  render(){
-
-    if(this.props.openId==this.props.formId&&this.props.isOpen){
-      return(
-        <TextField
-         floatingLabelText="プロット"
-         floatingLabelFixed={true}
-       />
-      );
-    }else{
-      return(
-
-        <div onClick={e=>{this.props.onClick(this.props.formId)}}>
-          hoge:{this.props.formId}
-        </div>
-      );
-    }
-  }
-}
-class TestForm extends Component{
-
-  renderTextList(){
-    const arr=[1,2,3,4,5];
-    const list=arr.map((component)=>{
-      return(
-        <TestFormChildren formId={component} openId={this.props.openId} onClick={(id)=>{this.props.changeOpenId(id)}} isOpen={this.props.isOpen}/>
-      );
-    })
-    return list;
-  }
-  render(){
-    return(
-      <div className="testList" onClick={e=>{this.props.closeChildren()}}>
-        {this.renderTextList()}
-      </div>
-    );
-  }
-}
- class TestFormParent extends Component{
-
-   constructor(){
-     super();
-     this.state={
-       isOpen:false,
-       openId:"2",
-     }
-   }
-   changeOpenId(id){
-     console.log("call changeOpenId() set ",id)
-     this.setState({
-       openId:id,
-       isOpen:true,
-     })
-   }
-   closeChildren(){
-     console.log("call closeChildren");
-     this.setState({
-       isOpen:false,
-     })
-   }
-   render(){
-     return(
-         <TestForm openId={this.state.openId} changeOpenId={(id)=>this.changeOpenId(id)} isOpen={this.props.isOpen} closeChildren={(e)=>this.closeChildren()}/>
-     );
-   }
- }
- //-----------------------------------------------------------------------
+injectTapEventPlugin()
 
 //Todo:characterを作成するためのボタン
+class testApp extends
 class CreateCharacterButton extends Component{
   constructor(){
     super();
@@ -149,8 +81,9 @@ class CreateCharacterButton extends Component{
     <div>
       <form name="createCharacterButton">
         {//FIX::Modalの下でTextFieldと、入力一文字目が変換できない不具合
-          //多分最初にタップを入力として受け付ける関数の呼び出しがされてないのが
-         //onTouchTapとメニューが開かない原因だと思われる
+          //多分最初にタップを入力として受け付ける関数（onTouchTap）の呼び出しがされてないのが
+         //とメニューが開かない原因だと思われる
+         //onTouchTapを契機にしたモジュール(button以外)に切り替え？
         }
         <div className="modalCreateCharacter">
           <Dialog
@@ -181,14 +114,64 @@ class CreateCharacterButton extends Component{
     </div>);
   }
 };
+class CharactersDialog extends Component{
+  constructor(){
+    super()
+  }
+  renderCharacterList(){
+    const list=this.props.characterList.map((component,index)=>{
+      return(
+        <div
+          class="dialog-character-record"
+          onClick={event=>this.props.updateCharacter({
+            character:component,
+            imagePath:component.avatar[DEFAULT_AVATAR_INDEX].avatarImagePath}
+          )}>
+            [@{component.id}:{component.name}<Avatar src={component.avatar[0].avatarImagePath}/>
+        </div>
+      )
+    })
+    return list;
+  }
+  render(){
+    if(this.props.isOpen){
+    return(
+      <span
+        id={this.props.id}
+        >
+        {this.renderCharacterList()}
+      </span>
+    )
+    }else{
+      return(
+        <span
+          id={this.props.id}
+          >
+        </span>
+      )
+    }
+  }
+}
+
 
 class MessageAvatar extends Component{
+  clickAvatar(event){
+    this.props.selectRecordComponent({
+      component:event.currentTarget.id
+    })
+    event.stopPropagation()
+  }
   render(){
     return(
-      <Avatar
-      src={this.props.imagePath}
-      size={30}
-      onClick={(event)=>this.props.onClick(event)}/>
+      <span
+        id={this.props.id}
+        onClick={(event)=>this.clickAvatar(event)}>
+        <Avatar
+        src={this.props.imagePath}
+        size={30}
+        />
+        {this.props.character.name}:
+      </span>
     );
   }
 }
@@ -213,105 +196,164 @@ class MessageHint extends Component{
     );
   }
 }
-var textValue;
+
 class EditableText extends Component{
 
-  constructor(){
-    super();
-    this.state={
-      isEditing:false,
-    }
-  }
-  handleChange(event){
-    textValue=event.target.value;
+
+  changeText(event){
+    this.props.updatePlot(event.target.value)
   }
   handleSubmit(event){
-    event.preventDefault();
-    this.setState({
-      isEditing:false,
-    });
-    this.props.onSubmit(textValue);
+    event.preventDefault()
+    this.props.selectRecordComponent({component: null})
   }
 
+  clickText(event){
+    this.props.selectRecordComponent({component: event.currentTarget.id})
+		event.stopPropagation()
+
+  }
   renderTextEdit(){
-    if(!this.state.isEditing){
+    if(!this.props.isEditing){
       return(
-        <span  onDoubleClick={e=>{this.setState({isEditing:true});this.props.onDoubleClick(e);}}>{this.props.textValue}</span>
+        <span
+          className="record-text"
+          >
+          {this.props.textValue}
+        </span>
       );
     }else{
       return(
-        <span className="messageListForm" >
+        <span
+          className="record-form" >
           <form onSubmit={(event)=> this.handleSubmit(event)}>
-            <TextField className="messageListFormTextField" defaultValue={this.props.textValue} onChange={event=>this.handleChange(event)}/>
+            <TextField
+              className="messageListFormTextField"
+              value={this.props.textValue}
+              onChange={event=>this.changeText(event)}
+              />
           </form>
         </span>
       );
     }
   }
-
   render(){
     return(
-      <span className="EditableText">
+      <span
+        id={this.props.id}
+        className="EditableText"
+        onClick={e=>this.clickText(e)}>
         {this.renderTextEdit()}
       </span>
     );
   }
 }
+
+class MessageRecord extends Component {
+  plotId="message-record-plot"
+  avatarId="message-record-avatar"
+  avatarDialogId="message-record-characterDialog"
+  updatePlot(plot){
+    let message=this.props.component
+    message.plot=plot
+    this.props.updateRecord(
+      {"id":this.props.component.id,
+        "message":message})
+  }
+  updateCharacter(event){
+    let message=this.props.component
+    message.character=event.character
+    message.imagePath=event.imagePath
+    this.props.updateRecord(
+      {"id":this.props.component.id,
+        "message":message})
+  }
+  render(){
+    let isEditing=(this.props.component.id===this.props.editTarget.id)
+    return(
+    <div className="message-record">
+      <CharactersDialog
+        id={this.avatarDialog}
+        isOpen={isEditing&&this.props.editTarget.component===this.avatarId}
+        onClick={event=>{event.stopPropagation()}}
+        characterList={this.props.characterList}
+        updateCharacter={(event)=>this.updateCharacter(event)}
+        />
+      <MessageAvatar
+        id={this.avatarId}
+        character={this.props.component.character}
+        imagePath={this.props.component.imagePath}
+        selectRecordComponent={
+          event=>this.props.selectRecordComponent({
+            id:this.props.component.id,
+            component:event.component
+        })}
+      />
+      <EditableText
+        id={this.plotId}
+        textValue={this.props.component.plot}
+        updatePlot={(plot)=>this.updatePlot(plot)}
+        isEditing={isEditing&&this.props.editTarget.component===this.plotId}
+        selectRecordComponent={
+          event=>this.props.selectRecordComponent({
+            id:this.props.component.id,
+            component:event.component
+        })}
+      />
+  </div>
+)}
+}
+
 class MessageList extends Component{
   constructor(){
     super();
     this.state={
       open:false,
-      changeValue:"",
-      messageId:"",
+      editTarget:{
+        id:null,
+        component:null
+      }
     }
   }
-  handleChooseAvater(chooseValue){
-    this.props.changeMessage("imagePath",this.state.messageId,chooseValue);
-    console.log("chooseValue()",chooseValue);
+  selectRecordComponent(e){
     this.setState({
-      open:false,
-    });
+      editTarget:{
+        id:e.id,
+        component:e.component
+      }
+    })
+    console.log("select::"+e.component)
   }
-  handleChangeText(changeValue,key){
-    this.props.changeMessage(key,this.state.messageId,changeValue);
-    console.log("changeValue()",changeValue);
+  updateRecord(e){
+    this.props.updateMessage(e.id,e.message);
   }
-  renderAvatarLists(){
-      const avatarLists=this.props.avatars.map((component,index)=>{
-        return(
-          <Avatar src={component.imagePath} onClick={(event)=>this.handleChooseAvater(component.imagePath)}/>
-        );
-      })
-      return avatarLists;
-  }
-  onSelect(){
+  clickList(e){
     this.setState({
-      open:true,
-  //z    messageId:component.id
-    });
+      editTarget:{
+        id:null,
+        component:null
+      }
+    })
   }
   renderList(){
-    const lists=this.props.messages.map((component,index) =>{
-      return (
+      const list=this.props.messages.map((component,index)=>{
+        return (
         <div>
-            <MessageAvatar imagePath={component.imagePath} onClick={(event)=>{this.onSelect()}}/>  <EditableText textValue={component.characterId} onDoubleClick={(event)=>{this.onSelect()}} onSubmit={(changeValue)=>this.handleChangeText(changeValue,"characterId")}/> ： <EditableText textValue={component.plot} onDoubleClick={(event)=>{this.onSelect()}} onSubmit={(changeValue)=>this.handleChangeText(changeValue,"plot")}/>
-            <Dialog
-              title="Please Select Avatar"
-              modal={true}
-              open={this.state.open}
-            >
-              {this.renderAvatarLists()}
-            </Dialog>
+            <MessageRecord
+              component={component}
+              characterList={this.props.characterList}
+              editTarget={this.state.editTarget}
+              selectRecordComponent={event=>this.selectRecordComponent(event)}
+              updateRecord={event=>this.updateRecord(event)}
+            />
         </div>
-      );
-    })
-    return lists;
+      )})
+    return list
   }
 
   render() {
     return (
-      <div className="messageList">
+      <div className="messageList" onClick={e=>this.clickList(e)}>
         {this.renderList()}
       </div>
     );
@@ -321,13 +363,18 @@ class MessageList extends Component{
 class MessageForm extends Component{
   handleSubmit(event){
     event.preventDefault();
-    this.props.onSubmit(this.refs.id.value.trim());
+    this.props.onSubmit(event);
 
   }
 
   handleChange(key,newValue){
-    this.props.onChange(key,
-      newValue);
+    this.props.onChange(
+      {
+        'target':this,
+        'key':key,
+        'text':newValue
+      }
+    );
   }
 
   render(){
@@ -342,12 +389,11 @@ class MessageForm extends Component{
             value={this.props.textValue["characterId"]}
             onChange={ev=>this.handleChange("characterId",ev.target.value)}/>
           <TextField
-           floatingLabelText="プロット"
-           ref="plot"
-           value={this.props.textValue["plot"]}
-           onChange={ev=>this.handleChange("plot",ev.target.value)}
+            floatingLabelText="メッセージ"
+            ref="plot"
+            value={this.props.textValue["plot"]}
+            onChange={ev=>this.handleChange("plot",ev.target.value)}
            />
-          <input type="hidden" ref="id" value="test"></input>
           <input type="submit" value="Post"></input>
         </form>
       </div>
@@ -411,41 +457,66 @@ class MainSection extends Component {
   constructor(){
     super();
     this.state={
-      emptyId:3,
-      newCharacterState:"",
-      characterList:[
+      emptyId:10,//最新の未割当id
+      characterList:[//キャラクター{id,name}
         {id:"test1",
          name:"テスト太郎",
+         avatar:[
+            {
+              id : 1,
+              emo : "通常",
+              avatarImagePath : avatar_img
+            },
+            {
+              id : 2,
+              emo : "笑い",
+              avatarImagePath : avatar_img
+            }
+        ],
+         basicEmotion:"笑い"
        },
        {
          id:"test2",
          name:"テスト次郎",
+         avatar:[
+            {
+              id : 1,
+              emo : "通常",
+              avatarImagePath : avatar_img2
+            },
+            {
+              id : 2,
+              emo : "笑い",
+              avatarImagePath : avatar_img2
+            }
+        ],
+         basicEmotion:"笑い"
        }
      ],
-      messages:[
+      messages:[//メッセージ{id,characterId,plot,imagePath}
         {
           id:1,
-          characterId:"test1",
+          character:
+            {
+              id:"test1",
+              name:"テスト太郎",
+              avatar:[]
+            },
           plot:"aaaaa",
           imagePath:"",
-        },
+        }/*,
         {
           id:2,
-          characterId:"test2",
+          character:
+            {
+              id:"test2",
+              name:"テスト次郎",
+            },
           plot:"bbbbb",
           imagePath:"",
-        }
+        }*/
       ],
-      avatars:[
-        {
-          characterId:"test1",
-          imagePath:avatar_img
-        },
-        {
-          characterId:"test2",
-          imagePath:avatar_img2
-        }
-      ],
+
       textValue:{
           id:"",
           characterId:"",
@@ -455,23 +526,23 @@ class MainSection extends Component {
      hintlist:[],
     };
   }
-  onChange(key,text){
+  onChange(e){
     const values=
       {
         characterId:this.state.textValue["characterId"],
         plot:this.state.textValue["plot"],
         imagePath:avatar_img,
       };　
-    values[key]=text;
+    values[e.key]=e.text;
     this.setState({
       textValue:values,
       }
-    );
-
-    if(text!=""){
+   );
+/*
+    if(e.text!=""){
       var lists=[];
       for (var index = 0; index < this.state.characterList.length; index++) {
-        if(this.state.characterList[index]["id"].startsWith(text)){
+        if(this.state.characterList[index]["id"].startsWith(e.text)){
           lists.push(this.state.characterList[index]["id"])
         }
       }
@@ -481,24 +552,38 @@ class MainSection extends Component {
     this.setState({
       hintlist:lists,
     });
+    */
   }
   autoIncrement(){
-    const id=this.state.emptyId;
+    const id=this.state.emptyId
     this.setState({
       emptyId:this.state.emptyId+1,
-    });
-    return id;
+    })
+    return id
   }
-  onSubmit(){
-    console.log("MessageBox::onSubmit()");
-    console.log(this.state.textValue);
-    console.log(this.state.emptyId);
+  messageSubmit=(e)=>{
+    console.log("MessageBox::messageSubmit()")
+    console.log(this.state.textValue)
+    console.log(this.state.emptyId)
+    //TODO::this.state.textValue["characterId"]にゴウチするキャラクターをcharacterListから探索
+    let character=  {
+      id:this.state.textValue.characterId,
+      name:"名無し"
+    }
+    let imagePath=null
+    for(let key in this.state.characterList){
+      if(this.state.characterList[key].id===this.state.textValue.characterId){
+          character=this.state.characterList[key]
+          imagePath=character.avatar[DEFAULT_AVATAR_INDEX].avatarImagePath
+      }
+    }
+
     this.setState({
       messages:this.state.messages.concat([{
         id:this.autoIncrement(),
-        characterId:this.state.textValue["characterId"],
+        character:character,
         plot:this.state.textValue["plot"],
-        imagePath:this.state.textValue["imagePath"],
+        imagePath:imagePath,
       }]),
       textValue:{
           id:"",
@@ -506,14 +591,12 @@ class MainSection extends Component {
           plot:"",
           imagePath:"",
         },
-    });
+    })
+    console.log(this.state.messages)
   }
 
   createCharacter(input_id,input_name){
-    //FIX::idにかぶりがないか確認
-    //name以外の詳細をこの時点で決めるか考える(とりあえずアバターくらいはつけてもいいかな)
-    //
-    this.setState({
+      this.setState({
       characterList:this.state.characterList.concat([{
         id:input_id,
         name:input_name,
@@ -521,13 +604,25 @@ class MainSection extends Component {
     });
 
   }
-  changeMessage(key,messageId,changeValue){
+  searchTargetIndex(id,messages){
+    let count=0
+    //TODO::this.state.messages内のidを検索して一致したレコードを更新
+    for(let key in messages){
+      if(messages[key].id===id){
+          return count
+      }
+      count++
+    }
+    return null
+  }
+  updateMessage(id,message){
     let messages=this.state.messages;
-    //とりあえず該当のメッセージ（１レコード）をコンソールに表示させる。
-    console.log(key,messageId);
-
+    const targetIndex = this.searchTargetIndex(id,messages);
+    console.log("target Index:"+targetIndex)
 //  messages:{id,characterId,plot,imagePath}
-    messages[messageId-1][key]=changeValue;
+//TODO::message更新処理をdbに実装、dbからmessageを取得してstateに取り入れる
+
+    messages[targetIndex]=message
     this.setState({
       messages:messages,
     });
@@ -538,22 +633,19 @@ class MainSection extends Component {
 
         <MuiThemeProvider muiTheme={getMuiTheme()}>
           <div className="mui">
-            <MainHeader characterList={this.state.characterList}/>
+      {//      <MainHeader characterList={this.state.characterList}/>
+    }
             <h1>Talks</h1>
-            <MessageList messages={this.state.messages} avatars={this.state.avatars} changeMessage={(key,messageId,changeValue)=>this.changeMessage(key,messageId,changeValue)}/>
-            <MessageForm　textValue={this.state.textValue} onSubmit={()=>this.onSubmit()} onChange={(key,text)=>this.onChange(key,text)}/>
-            <div>入力中{this.state.textValue["plot"]}</div>
-            <MessageHint  hintlist={this.state.hintlist}/>
-            <CreateCharacterButton createCharacter={(input_id,input_name)=>this.createCharacter(input_id,input_name)}/>
-              <h2 className="Footer">END</h2>
-              <div onClick={(event)=>{console.log("clickされたよ");}} draggable="true">
-                tetetetesssss
-              </div>
-
-            <div className="test">
-              <TestFormParent />
-            </div>
-
+            <MessageList
+              characterList={this.state.characterList}
+              messages={this.state.messages}
+              updateMessage={(id,message)=>this.updateMessage(id,message)}/>
+            <MessageForm　
+              textValue={this.state.textValue}
+              characters={this.state.characterList}
+              onSubmit={(e)=>this.messageSubmit(e)}
+              onChange={(e)=>this.onChange(e)}/>
+            <h2 className="Footer">END</h2>
           </div>
         </MuiThemeProvider>
       </div>
