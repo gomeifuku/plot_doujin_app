@@ -2,131 +2,116 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import './MainSection.css';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import AppBar from 'material-ui/AppBar';
+import AppBar from 'material-ui/AppBar'
 import TextField from 'material-ui/TextField';
 import Avatar from 'material-ui/Avatar';
-import FileFolder from 'material-ui/svg-icons/file/folder';
 import Drawer from 'material-ui/Drawer';
 import Dialog from 'material-ui/Dialog';
-import MenuItem from 'material-ui/MenuItem';
+import List from 'material-ui/List';
+import Divider from 'material-ui/Divider';
+import { MenuList, MenuItem } from 'material-ui/Menu';
 import IconButton from 'material-ui/IconButton';
-import IconMenu from 'material-ui/IconMenu';
-import SvgIcon from 'material-ui/svg-icons/action/home';
-import FlatButton from 'material-ui/FlatButton';
-import Modal from 'react-modal';
+import HomeIcon from 'material-ui-icons/Home';
+import AddIcon from 'material-ui-icons/Add';
+import Snackbar from 'material-ui/Snackbar';
 import avatar_img from '../../public/avatar.jpg';
 import avatar_img2 from '../../public/avatar2.png';
+import 'typeface-roboto'
 import TestComponent from './TestComponent';
+import KeyHandler, {KEYDOWN} from 'react-key-handler';
 const DEFAULT_AVATAR_INDEX = 0
-//連想配列に関して，いちいち属性増えた時直すの面倒だから型を決めて変数入力するだけのジェネレータを作っておく
+//TODO::連想配列に関して，いちいち属性増えた時直すの面倒だから型を決めて変数入力するだけのジェネレータを作っておく
+//↑TypeScriptを使う
 injectTapEventPlugin()
 
 //Todo:characterを作成するためのボタン
-class testApp extends
-class CreateCharacterButton extends Component{
+class CreateCharacterItem extends Component{
   constructor(){
-    super();
+    super()
     this.state={
       modalIsOpen:false,
       newCharacterStates:{
-        name:"",
         id:"",
+        name:"",
+        avatar:[{
+          id : 1,
+          emo : "",
+          avatarImagePath : avatar_img
+        }],
+        basicEmotion:""
       },
     }
   }
-
-  showModal(){
-    this.setState({
-      modalIsOpen:true
-    });
-    console.log("show Modal Window");
-  }
-
-  closeModal() {
-      console.log("close Modal")
-      const formInput={
-        id:"",
-        name:"",
-      }
-      this.setState({
-        newCharacterStates:formInput,
-        modalIsOpen: false,
-      });
-  }
-
-  handleChange(key,text){
-    const formInput={
-      id:this.state.newCharacterStates["id"],
-      name:this.state.newCharacterStates["name"],
-    };
-    formInput[key]=text;
+  textChange(event){
+    let formInput=this.state.newCharacterStates
+    formInput[event.key]=event.text;
     this.setState({
       newCharacterStates:formInput,
     });
   }
-  handleClick(event){
-    this.showModal();
+  createCharacter(event){
+    event.preventDefault()
+    this.props.createCharacter(this.state.newCharacterStates)
+    this.setState({
+      newCharacterStates:{
+        id:"",
+        name:"",
+        avatar:[{
+          id : 1,
+          emo : "通常",
+          avatarImagePath : avatar_img
+        }],
+        basicEmotion:"",
+      }
+    })
   }
-
-  handleSubmit(event){
-    event.preventDefault();
-    this.props.createCharacter(this.state.newCharacterStates["id"],this.state.newCharacterStates["name"]);
-    this.closeModal();
-  }
-
   render(){
     return(
-    <div>
-      <form name="createCharacterButton">
-        {//FIX::Modalの下でTextFieldと、入力一文字目が変換できない不具合
-          //多分最初にタップを入力として受け付ける関数（onTouchTap）の呼び出しがされてないのが
-         //とメニューが開かない原因だと思われる
-         //onTouchTapを契機にしたモジュール(button以外)に切り替え？
-        }
         <div className="modalCreateCharacter">
           <Dialog
             title ="Create New Character"
-            open={this.state.modalIsOpen}>
+            open={this.props.isOpen}
+            >
             <div className="modalCreateCharacterForm">
-              <form className="messageForm" onSubmit={(event)=> this.handleSubmit(event)}>
+              <form className="messageForm" onSubmit={(event)=> this.createCharacter(event)}>
                 <TextField
-                  floatingLabelText="ID"
-                  ref="create_id"
-                  onChange={ev=>this.handleChange("id",ev.target.value)}
-                  value={this.state.newCharacterStates["id"]}
+                  label="ID"
+                  onChange={event=>this.textChange({
+                    key:"id",
+                    text:event.target.value
+                  })}
+                  value={this.state.newCharacterStates.id}
                 />
                 <TextField
-                 floatingLabelText="名前"
-                 ref="create_name"
-                 onChange={ev=>this.handleChange("name",ev.target.value)}
-                 value={this.state.newCharacterStates["name"]}
+                 label="名前"
+                 onChange={event=>this.textChange({
+                   key:"name",
+                   text:event.target.value
+                 })}
+                 value={this.state.newCharacterStates.name}
                  />
                 <input type="submit" value="Post"></input>
               </form>
            </div>
-           <button onClick={(event)=>this.closeModal(event)}>Close</button>
           </Dialog>
         </div>
-        <input type="button" onClick={(event)=>this.handleClick(event)} value="create character"></input>
-      </form>
-    </div>);
+      )
   }
-};
-class CharactersDialog extends Component{
-  constructor(){
-    super()
-  }
+}
+class CharacterListDialog extends Component{
   renderCharacterList(){
     const list=this.props.characterList.map((component,index)=>{
       return(
         <div
-          class="dialog-character-record"
-          onClick={event=>this.props.updateCharacter({
-            character:component,
-            imagePath:component.avatar[DEFAULT_AVATAR_INDEX].avatarImagePath}
-          )}>
+          key={index}
+          className="dialog-character-record"
+          onClick={event=>{
+            this.props.updateCharacter({
+              character:component,
+              imagePath:component.avatar[DEFAULT_AVATAR_INDEX].avatarImagePath
+            })
+            this.props.selectRecordComponent(event)
+          }}>
             [@{component.id}:{component.name}<Avatar src={component.avatar[0].avatarImagePath}/>
         </div>
       )
@@ -155,7 +140,7 @@ class CharactersDialog extends Component{
 
 
 class MessageAvatar extends Component{
-  clickAvatar(event){
+  doubleClickAvatar(event){
     this.props.selectRecordComponent({
       component:event.currentTarget.id
     })
@@ -165,7 +150,7 @@ class MessageAvatar extends Component{
     return(
       <span
         id={this.props.id}
-        onClick={(event)=>this.clickAvatar(event)}>
+        onDoubleClick={(event)=>this.doubleClickAvatar(event)}>
         <Avatar
         src={this.props.imagePath}
         size={30}
@@ -180,7 +165,7 @@ class MessageHint extends Component{
   renderHintList(){
     const lists=this.props.hintlist.map((component,index) =>{
       return (
-        <div>
+        <div key={index}>
           {component}
         </div>
       );
@@ -208,7 +193,7 @@ class EditableText extends Component{
     this.props.selectRecordComponent({component: null})
   }
 
-  clickText(event){
+  doubleClickText(event){
     this.props.selectRecordComponent({component: event.currentTarget.id})
 		event.stopPropagation()
 
@@ -242,7 +227,7 @@ class EditableText extends Component{
       <span
         id={this.props.id}
         className="EditableText"
-        onClick={e=>this.clickText(e)}>
+        onDoubleClick={e=>this.doubleClickText(e)}>
         {this.renderTextEdit()}
       </span>
     );
@@ -268,38 +253,60 @@ class MessageRecord extends Component {
       {"id":this.props.component.id,
         "message":message})
   }
+  selectRecord(event){
+    this.props.selectRecord({id:this.props.component.id,key:{shiftKey:event.shiftKey,altKey:event.altKey}})
+    event.stopPropagation()
+  }
   render(){
     let isEditing=(this.props.component.id===this.props.editTarget.id)
+    let devStyle={backgroundColor:"blue"}
+    if(this.props.isSelect){
+      devStyle={backgroundColor:"red"}
+    }
     return(
-    <div className="message-record">
-      <CharactersDialog
+    <div>
+      {//TODO::DIALOGはRecordの上に移動
+      }
+      <span
+      className="message-dialog">
+      <CharacterListDialog
         id={this.avatarDialog}
         isOpen={isEditing&&this.props.editTarget.component===this.avatarId}
         onClick={event=>{event.stopPropagation()}}
         characterList={this.props.characterList}
         updateCharacter={(event)=>this.updateCharacter(event)}
+        selectRecordComponent={
+          event=>this.props.selectRecordComponent({
+            id:null,
+            component:null
+        })}/>
+      </span>
+      <span
+        id="message-record"
+        onClick={event=>{this.selectRecord(event)}}
+        style={devStyle}>
+        <MessageAvatar
+          id={this.avatarId}
+          character={this.props.component.character}
+          imagePath={this.props.component.imagePath}
+          selectRecordComponent={
+            event=>this.props.selectRecordComponent({
+              id:this.props.component.id,
+              component:event.component
+          })}
         />
-      <MessageAvatar
-        id={this.avatarId}
-        character={this.props.component.character}
-        imagePath={this.props.component.imagePath}
-        selectRecordComponent={
-          event=>this.props.selectRecordComponent({
-            id:this.props.component.id,
-            component:event.component
-        })}
-      />
-      <EditableText
-        id={this.plotId}
-        textValue={this.props.component.plot}
-        updatePlot={(plot)=>this.updatePlot(plot)}
-        isEditing={isEditing&&this.props.editTarget.component===this.plotId}
-        selectRecordComponent={
-          event=>this.props.selectRecordComponent({
-            id:this.props.component.id,
-            component:event.component
-        })}
-      />
+        <EditableText
+          id={this.plotId}
+          textValue={this.props.component.plot}
+          updatePlot={(plot)=>this.updatePlot(plot)}
+          isEditing={isEditing&&this.props.editTarget.component===this.plotId}
+          selectRecordComponent={
+            event=>this.props.selectRecordComponent({
+              id:this.props.component.id,
+              component:event.component
+          })}
+        />
+      </span>
   </div>
 )}
 }
@@ -312,8 +319,34 @@ class MessageList extends Component{
       editTarget:{
         id:null,
         component:null
-      }
+      },
+      selectedRecord:[],
     }
+  }
+  insertIndex(arr,key){
+    let index=arr.indexOf(key)
+    if(index !== -1){
+      arr.splice(index,1)
+    }
+    arr.push(key)
+  }
+  selectRecord(event){
+    let sel=this.state.selectedRecord
+
+    if(event.key.shiftKey){
+      //T.B.D
+    }else if(event.key.altKey){
+      this.insertIndex(sel,event.id)
+    }else{
+      sel=[]
+      this.insertIndex(sel,event.id)
+    }
+    this.setState({
+      selectedRecord :sel
+    })
+    console.log("selectRecord")
+    console.log(sel)
+
   }
   selectRecordComponent(e){
     this.setState({
@@ -327,7 +360,16 @@ class MessageList extends Component{
   updateRecord(e){
     this.props.updateMessage(e.id,e.message);
   }
-  clickList(e){
+  deleteRecord(idList){
+      for(let key in idList){
+        console.log("key is "+ idList[key])
+        this.props.deleteMessage(idList[key])
+      }
+      this.setState({
+        selectedRecord:[]
+      })
+  }
+  resetTarget(event){
     this.setState({
       editTarget:{
         id:null,
@@ -335,14 +377,21 @@ class MessageList extends Component{
       }
     })
   }
+  cancelSelectRecord(event){
+    this.setState({
+      selectedRecord:[]
+    })
+  }
   renderList(){
       const list=this.props.messages.map((component,index)=>{
         return (
-        <div>
+        <div key={index}>
             <MessageRecord
               component={component}
               characterList={this.props.characterList}
               editTarget={this.state.editTarget}
+              isSelect={(this.state.selectedRecord.indexOf(component.id)!=-1)}
+              selectRecord={event=>this.selectRecord(event)}
               selectRecordComponent={event=>this.selectRecordComponent(event)}
               updateRecord={event=>this.updateRecord(event)}
             />
@@ -350,14 +399,26 @@ class MessageList extends Component{
       )})
     return list
   }
-
   render() {
+    const DELETE = 8
     return (
-      <div className="messageList" onClick={e=>this.clickList(e)}>
+      <div
+        className="messageList"
+        onClick={e=>this.cancelSelectRecord(e)}
+        onDoubleClick={e=>this.resetTarget(e)}>
+        <KeyHandler
+          keyEventName={KEYDOWN}
+          keyCode={DELETE}
+          onKeyHandle={event=>
+            {
+                console.log("delete")
+                this.deleteRecord(this.state.selectedRecord)
+            }}/>
         {this.renderList()}
       </div>
-    );
-  }
+
+  );
+}
 }
 
 class MessageForm extends Component{
@@ -384,13 +445,11 @@ class MessageForm extends Component{
           {//ここにアバターを設定する画像ボタン設置
           }
           <TextField
-            floatingLabelText="キャラクター"
-            ref="character"
+            label="キャラクター"
             value={this.props.textValue["characterId"]}
             onChange={ev=>this.handleChange("characterId",ev.target.value)}/>
           <TextField
-            floatingLabelText="メッセージ"
-            ref="plot"
+            label="メッセージ"
             value={this.props.textValue["plot"]}
             onChange={ev=>this.handleChange("plot",ev.target.value)}
            />
@@ -401,55 +460,75 @@ class MessageForm extends Component{
   }
 }
 
-const characterListButton = (props) => (
-  <FlatButton label="CharacterList" />
-)
-
 class MainHeader extends Component {
   constructor(){
     super();
     this.state={
-      open:false,
+      isCharacterListOpen:false,
+      isCreateCharacterFormOpen:false,
     }
   }
-  showCharacterList(){
+  renderCharacterList(){
     const list=this.props.characterList.map((component,index)=>{
       return(
-        <MenuItem onClick={this.handleClose}>
-          {component.name}
+        <MenuItem onClick={this.handleClose} key={index}>
+            @{component.id}:{component.name}<Avatar src={component.avatar[0].avatarImagePath}/>
         </MenuItem>
       );
     })
-
     return list;
   }
-  handleToggle = () =>{console.log("toggle");this.setState({open:!this.state.open});}
-  handleClose = () =>this.setState({open:false});
+
+  toggleCharacterList = (event) =>{
+    this.setState({
+      isCharacterListOpen:!this.state.isCharacterListOpen
+    })
+  }
+  toggleCreateCharacterForm= (event) =>{
+    this.setState({
+      isCreateCharacterFormOpen:!this.state.isCreateCharacterFormOpen
+    })
+  }
+  createCharacter(character){
+    const isSuccess=this.props.updateCharacterList(character)
+    if(isSuccess){
+      this.setState({
+        isCreateCharacterFormOpen:false
+      })
+    }
+    return isSuccess
+  }
   render(){
     return(
       <div className="MainHeader">
+        <CreateCharacterItem
+          isOpen={this.state.isCreateCharacterFormOpen}
+          createCharacter={e=>{this.createCharacter(e)}}/>
         <Drawer
-          docked={false}
-          width={200}
-          open={this.state.open}
-          onRequestChange={(open) => this.setState({open})}
-        >
-          {this.showCharacterList()}
+          anchor="left"
+          open={this.state.isCharacterListOpen}
+          title="plot-doujin-app"
+          onClose={event=>this.toggleCharacterList(event)}>
+          <MenuList>
+            {this.renderCharacterList()}
+            <MenuItem
+              onClick={e=>this.toggleCreateCharacterForm(e)}>
+              {"Add Characeter "}
+              <Avatar >
+                <AddIcon/>
+              </Avatar>
+            </MenuItem>
+          </MenuList>
         </Drawer>
                   {/*Fix::メニューが開かない、こまった  　=>ボタンだけでDrawerを表示 */ }
-        <AppBar title="plotApp" iconElementLeft={
+        <AppBar position="static" color="default" title="plotApp" >
           <IconButton
-            tooltip="List"
-            onTouchTap = {(event)=>{
-              console.log("tap");
-              this.handleToggle();
-            }} >
-            <SvgIcon />
-          </IconButton>}>
+            onTouchTap = {(event)=>{this.toggleCharacterList(event)}}>
+            <HomeIcon />
+          </IconButton>
         </AppBar>
       </div>
-
-    );
+    )
   }
 }
 
@@ -457,6 +536,8 @@ class MainSection extends Component {
   constructor(){
     super();
     this.state={
+      isOpenErrorBar:false,
+      errorMessage:"",
       emptyId:10,//最新の未割当id
       characterList:[//キャラクター{id,name}
         {id:"test1",
@@ -531,13 +612,13 @@ class MainSection extends Component {
       {
         characterId:this.state.textValue["characterId"],
         plot:this.state.textValue["plot"],
-        imagePath:avatar_img,
-      };　
-    values[e.key]=e.text;
+      };
+    values[e.key]=e.text
     this.setState({
       textValue:values,
       }
-   );
+   )
+
 /*
     if(e.text!=""){
       var lists=[];
@@ -554,6 +635,13 @@ class MainSection extends Component {
     });
     */
   }
+  updateCharacterList(character){
+    this.setState({
+      characterList:this.state.characterList.concat(character)
+    })
+    console.log(character)
+    return true
+  }
   autoIncrement(){
     const id=this.state.emptyId
     this.setState({
@@ -561,11 +649,22 @@ class MainSection extends Component {
     })
     return id
   }
+  checkText(textValue){
+    return (textValue.plot!==""&&textValue.characterId!=="")
+  }
+  showErrorMessage(errorText){
+    this.setState({
+      isOpenErrorBar:true,
+      errorMessage:errorText,
+    })
+  }
+  closeErrorMessage(){
+    this.setState({
+      isOpenErrorBar:false,
+      errorMessage:""
+    })
+  }
   messageSubmit=(e)=>{
-    console.log("MessageBox::messageSubmit()")
-    console.log(this.state.textValue)
-    console.log(this.state.emptyId)
-    //TODO::this.state.textValue["characterId"]にゴウチするキャラクターをcharacterListから探索
     let character=  {
       id:this.state.textValue.characterId,
       name:"名無し"
@@ -577,32 +676,24 @@ class MainSection extends Component {
           imagePath=character.avatar[DEFAULT_AVATAR_INDEX].avatarImagePath
       }
     }
-
-    this.setState({
-      messages:this.state.messages.concat([{
-        id:this.autoIncrement(),
-        character:character,
-        plot:this.state.textValue["plot"],
-        imagePath:imagePath,
-      }]),
-      textValue:{
-          id:"",
-          characterId:"",
-          plot:"",
-          imagePath:"",
-        },
-    })
-    console.log(this.state.messages)
-  }
-
-  createCharacter(input_id,input_name){
+    if(this.checkText(this.state.textValue)){
       this.setState({
-      characterList:this.state.characterList.concat([{
-        id:input_id,
-        name:input_name,
-      }]),
-    });
-
+        messages:this.state.messages.concat([{
+          id:this.autoIncrement(),
+          character:character,
+          plot:this.state.textValue["plot"],
+          imagePath:imagePath,
+        }]),
+        textValue:{
+            id:"",
+            characterId:this.state.textValue.characterId,
+            plot:"",
+            imagePath:"",
+          },
+      })
+    }else{
+      this.showErrorMessage("メッセージを入力してください")
+    }
   }
   searchTargetIndex(id,messages){
     let count=0
@@ -618,36 +709,54 @@ class MainSection extends Component {
   updateMessage(id,message){
     let messages=this.state.messages;
     const targetIndex = this.searchTargetIndex(id,messages);
-    console.log("target Index:"+targetIndex)
+    // console.log("target Index:"+targetIndex)
 //  messages:{id,characterId,plot,imagePath}
 //TODO::message更新処理をdbに実装、dbからmessageを取得してstateに取り入れる
-
-    messages[targetIndex]=message
-    this.setState({
-      messages:messages,
-    });
+    if(message.plot!==null){
+      messages[targetIndex]=message
+      this.setState({
+        messages:messages,
+      })
+    }else{
+      this.deleteMessage(id)
+    }
+  }
+  deleteMessage(id){
+    let messages=this.state.messages
+    const index=this.searchTargetIndex(id,messages)
+    if(index!=null){
+      messages.splice(index,1)
+      this.setState({
+        messages:messages
+      })
+    }
   }
   render() {
     return (
       <div className="messageBox">
-
-        <MuiThemeProvider muiTheme={getMuiTheme()}>
           <div className="mui">
-      {//      <MainHeader characterList={this.state.characterList}/>
-    }
+           <MainHeader
+             characterList={this.state.characterList}
+             updateCharacterList={character=>this.updateCharacterList(character)}/>
             <h1>Talks</h1>
             <MessageList
               characterList={this.state.characterList}
               messages={this.state.messages}
-              updateMessage={(id,message)=>this.updateMessage(id,message)}/>
+              updateMessage={(id,message)=>this.updateMessage(id,message)}
+              deleteMessage={id=>this.deleteMessage(id)}/>
             <MessageForm　
               textValue={this.state.textValue}
               characters={this.state.characterList}
               onSubmit={(e)=>this.messageSubmit(e)}
               onChange={(e)=>this.onChange(e)}/>
             <h2 className="Footer">END</h2>
+              <Snackbar
+                open={this.state.isOpenErrorBar}
+                message={this.state.errorMessage}
+                autoHideDuration={2000}
+                onClose={event=>this.closeErrorMessage(event)}
+              />
           </div>
-        </MuiThemeProvider>
       </div>
     );
   }

@@ -6,7 +6,6 @@ import './MainSection.css';
 class TestFormChildren extends Component{
 
   render(){
-
     if(this.props.openId==this.props.formId&&this.props.isOpen){
       return(
         <TextField

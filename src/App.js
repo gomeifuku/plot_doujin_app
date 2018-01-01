@@ -1,13 +1,10 @@
 'use strict'
-import React, {Component} from 'react';
+import React, {Component} from 'react'
 import ReactDOM from 'react-dom'
-import logo from './logo.svg';
-import './App.css';
-import injectTapEventPlugin from 'react-tap-event-plugin';
-import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import Header from './Header';
-import MainSection from './components/MainSection';
+import logo from './logo.svg'
+import './App.css'
+import Header from './Header'
+import MainSection from './components/MainSection'
 
 //import {parseTime} from "../utils/dates"
 
@@ -19,19 +16,19 @@ class App extends Component {
     render() {
         return (
             <div className="App">
-              <MuiThemeProvider muiTheme={getMuiTheme()}>
+    { /*             <MuiThemeProvider muiTheme={getMuiTheme()}>
                 <div className="App-header">
-                              <Header />
+                          <Header />
                     <img src={logo} className="App-logo" alt="logo"/>
                     <h2>Welcome to React</h2>
 
-                </div>
+                </div>*
               </MuiThemeProvider>
                 <p className="App-intro">
                     To get started, edit
                     <code>src/App.js</code>
                     and save to reload.
-                </p>
+                </p>*/}
                 <MainSection />
             </div>
         );
