@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 import './MainSection.css';
 
-//---------------------Component Test Field---------------------------------
 class TestFormChildren extends Component{
 
   render(){
