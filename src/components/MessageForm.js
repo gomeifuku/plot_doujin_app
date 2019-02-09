@@ -1,25 +1,5 @@
 import React, {Component} from 'react';
-import TextField from 'material-ui/TextField';
-
-
-class MessageHint extends Component {
-  renderHintList() {
-    const lists = this.props.hintlist.map((component, index) => {
-      return (<div key={index}>
-        {component}
-      </div>);
-    })
-    return lists;
-  }
-
-  render() {
-    return (<div className="hintList">
-      {this.renderHintList()}
-    </div>);
-  }
-}
-
-
+import TextField from '@material-ui/core/TextField';
 
 class MessageForm extends Component {
   handleSubmit(event) {

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import KeyHandler, {KEYDOWN} from 'react-key-handler';
-import TextField from 'material-ui/TextField';
-import Avatar from 'material-ui/Avatar';
+import TextField from '@material-ui/core/TextField';
+import Avatar from '@material-ui/core/Avatar';
 
 const DEFAULT_AVATAR_INDEX = 0
 

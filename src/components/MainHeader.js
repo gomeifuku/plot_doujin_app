@@ -1,16 +1,16 @@
 import React, {Component} from 'react';
 import avatar_img from '../../public/avatar.jpg';
 import avatar_img2 from '../../public/avatar2.png';
-import TextField from 'material-ui/TextField';
-import AppBar from 'material-ui/AppBar'
-import Avatar from 'material-ui/Avatar';
-import Drawer from 'material-ui/Drawer';
-import Dialog, {DialogActions, DialogContent, DialogTitle} from 'material-ui/Dialog';
-import Button from 'material-ui/Button';
-import {MenuList, MenuItem} from 'material-ui/Menu';
-import IconButton from 'material-ui/IconButton';
-import HomeIcon from 'material-ui-icons/Home';
-import AddIcon from 'material-ui-icons/Add';
+import TextField from '@material-ui/core/TextField';
+import AppBar from '@material-ui/core/AppBar'
+import Avatar from '@material-ui/core/Avatar';
+import Drawer from '@material-ui/core/Drawer';
+import Dialog, {DialogActions, DialogContent, DialogTitle} from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
+import {MenuList, MenuItem} from '@material-ui/core/Menu';
+import IconButton from '@material-ui/core/IconButton';
+import HomeIcon from '@material-ui/icons/Home';
+import AddIcon from '@material-ui/icons/Add';
 
 class CreateCharacterItem extends Component {
   constructor() {
@@ -56,7 +56,8 @@ class CreateCharacterItem extends Component {
     }
   }
   render() {
-    return (<div className="modalCreateCharacter">
+    return (
+      <div className="modalCreateCharacter">
       <Dialog title="Create New Character" open={this.props.isOpen} onClose={this.props.onCancelAction}>
         <DialogTitle>{"Please Input Character's Info"}</DialogTitle>
         <DialogContent>
@@ -114,7 +115,8 @@ class MainHeader extends Component {
     return isSuccess
   }
   render() {
-    return (<div className="MainHeader">
+    return (
+      <div className="MainHeader">
       <CreateCharacterItem isOpen={this.state.isCreateCharacterFormOpen} createCharacter={e => this.createCharacter(e)} onCancelAction={e => this.toggleCreateCharacterForm(e)}/>
       <Drawer anchor="left" open={this.state.isCharacterListOpen} title="plot-doujin-app" onClose={event => this.toggleCharacterList(event)}>
         <MenuList>

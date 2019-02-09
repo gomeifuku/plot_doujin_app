@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import './MainSection.css';
 
 class TestFormChildren extends Component{
 

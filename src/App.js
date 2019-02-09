@@ -14,6 +14,13 @@ import MainSection from './components/MainSection'
 
 class App extends Component {
     render() {
+      const class_name_list = {
+        header:"header",
+        list:"list",
+        form:"form",
+        footer:"footer"
+      }
+
         return (
             <div className="App">
     { /*             <MuiThemeProvider muiTheme={getMuiTheme()}>
@@ -29,7 +36,7 @@ class App extends Component {
                     <code>src/App.js</code>
                     and save to reload.
                 </p>*/}
-                <MainSection />
+                <MainSection classes={class_name_list}/>
             </div>
         );
     }
