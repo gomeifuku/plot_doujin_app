@@ -1,4 +1,4 @@
-import { React, Component } from 'react'
+import React, { Component } from 'react'
 import Snackbar from '@material-ui/core/Snackbar'
 import AvatarImg from '../../public/avatar.jpg'
 import AvatarImg2 from '../../public/avatar2.png'
